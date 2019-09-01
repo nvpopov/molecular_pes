@@ -90,10 +90,6 @@ for task_id, task in enumerate(task_list):
                 task_data_accum[task_id * arg_task_per_file + oi_cnt-1][14] = dipole_moment_vector[2]
                 dipole_counter = 0
 
-
-
-
-
 print(len(task_data_accum))
 print(len(task_data_energy))
 task_data_accum_sol = []
@@ -112,7 +108,7 @@ out_pes = open(arg_outfile, "w")
 
 out_pes.write("r(A),tt(D),t(D),p(D),ec(cminv),dx(au),dy(au),dz(au)\n")
 for task_ in tdas_sorted:
-    out_pes.write("{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},{6:.3f},{7:.3f}\n".format(
+    out_pes.write("{0:.5f},{1:.5f},{2:.5f},{3:.5f},{4:.5f},{5:.5f},{6:.5f},{7:.5f}\n".format(
         task_[0], task_[1], task_[2], task_[3], task_[8], task_[12], task_[13], task_[14]))
 
 

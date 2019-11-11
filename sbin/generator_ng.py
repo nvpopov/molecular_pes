@@ -5,7 +5,7 @@ from enum import Enum
 import sys, os
 import itertools
 
-d_N2 = 1.095   
+d_N2 = 1.099998  
 d_N2_SolidState = 1.06  
 
 DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX def2/J VERYTIGHTSCF  DIRECT PMODEL
@@ -61,6 +61,8 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
     batch_file = None
     batch_file_domain = None
 
+    xyz_file = open("anim.xyz", "w")
+
     for q, i in enumerate(itertools.product(range_R, range_phi)):
 
         if (q % batch_per_input == 0):
@@ -77,6 +79,7 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         ir = i[0]
         iphi = i[1]
 
+        xyz_file.write("{}\n\n".format(len(linear_molecule.atoms)+1))
         #compose task directory
        
         #N1 = [d_N2/2, 0, 0]
@@ -89,6 +92,7 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
+            xyz_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
         
         SA_R = R0 + ir*DR
         SA_phi = phi0 + iphi*Dphi
@@ -108,6 +112,7 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
 
         SA = [SA_R * cos(SA_phi), SA_R * sin(SA_phi),0]
         batch_file.write("{} {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
+        xyz_file.write("{} {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
         batch_file.write("end\n\n")
 
         #Emit monomer A with ghost atoms(B)
@@ -141,8 +146,18 @@ def sample_tasks_N2_Ar_pes(N2dist):
 
     cb_linear_mol_vs_single_atom(N2_mol, Ar_mol, "./", 1)
 
+def sample_tasks_N2_Ne_pes(N2dist):
+    N2_mol = Molecule()
+    N2_mol.add_atom("N", [N2dist/2, 0, 0])
+    N2_mol.add_atom("N", [-N2dist/2, 0, 0])
+
+    Ne_mol = Molecule()
+    Ne_mol.add_atom("Ne", [0, 0, 0])
+
+    cb_linear_mol_vs_single_atom(N2_mol, Ne_mol, "./", 1)
+
 def app_main():
-    sample_tasks_N2_Ar_pes(d_N2)
+    sample_tasks_N2_Ne_pes(d_N2)
     pass
 
 if __name__ == "__main__":

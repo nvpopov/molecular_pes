@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-from math import pi,sin,cos
+from math import pi,sin,cos,sqrt,pow
 from enum import Enum
 import sys, os
 import itertools
 
-d_N2 = 1.12   
+d_N2 = 1.095   
 d_N2_SolidState = 1.06  
 
 DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX def2/J VERYTIGHTSCF  DIRECT PMODEL
@@ -92,8 +92,19 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         
         SA_R = R0 + ir*DR
         SA_phi = phi0 + iphi*Dphi
+        SA = [SA_R * cos(SA_phi), SA_R * sin(SA_phi),0]
+        
+        dists_to_lm = []
+        for atom_lm in linear_molecule.atoms:
+            dist = pow(atom_lm.coord[0] - SA_R * cos(SA_phi), 2) + \
+            pow(atom_lm.coord[1] - SA_R * sin(SA_phi), 2) + \
+            pow(atom_lm.coord[2] - 0, 2) 
+            dist_sqrt = sqrt(dist)
+            dists_to_lm.append(dist_sqrt)
 
-        batch_file_domain.write("{} {}\n".format(SA_R, SA_phi))
+        dists_to_lm_str = " ".join(map(str, dists_to_lm))
+
+        batch_file_domain.write("{} {} {}\n".format(SA_R, SA_phi, dists_to_lm_str))
 
         SA = [SA_R * cos(SA_phi), SA_R * sin(SA_phi),0]
         batch_file.write("{} {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
@@ -105,9 +116,7 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
-        SA_R = R0 + ir*DR
-        SA_phi = phi0 + iphi*Dphi
-        SA = [SA_R * cos(SA_phi), SA_R * sin(SA_phi),0]
+     
         batch_file.write("{}: {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
         batch_file.write("end\n\n")
 
@@ -117,9 +126,6 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{}: {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
-        SA_R = R0 + ir*DR
-        SA_phi = phi0 + iphi*Dphi
-        SA = [SA_R * cos(SA_phi), SA_R * sin(SA_phi),0]
         batch_file.write("{} {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
         batch_file.write("end\n\n")
 

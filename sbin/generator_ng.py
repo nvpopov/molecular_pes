@@ -13,6 +13,25 @@ DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX 
 %pal nprocs 3 
 end"""
 
+CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF  DIRECT PMODEL
+%maxcore 3000
+%pal nprocs 3 
+end"""
+
+AUG_CCPVXZ_BASIS_NAMES = {
+    2 : "aug-cc-pVDZ",
+    3 : "aug-cc-pVTZ",
+    4 : "aug-cc-pVQZ",
+    5 : "aug-cc-pV5Z"
+}
+
+CCPVXZ_BASIS_NAMES = {
+    2 : "cc-pVDZ",
+    3 : "cc-pVTZ",
+    4 : "cc-pVQZ",
+    5 : "cc-pV5Z"
+}
+
 class ModelType(Enum):
     UNKNOWN = 1
     LINEAR_MOLECULE_VERSUS_SINGLE_ATOM = 2
@@ -37,7 +56,7 @@ def cb_unknown(linear_molecule, single_atom, outdir, batch_per_input):
     raise Exception("Unknown model format")
 
 def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per_input,
-                                 R0 = 1.7, Rmax = 10, NR = 50, phi0 = 0e0, phiM = pi/2e0, Nphi = 15):
+                                 R0 = 1.7, Rmax = 10, NR = 50, phi0 = 0e0, phiM = pi/2e0, Nphi = 15, doCBS = False):
 
     # phi0 = 0e0      # angle
     # phiM = pi/2e0   # angle
@@ -84,11 +103,17 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
        
         #N1 = [d_N2/2, 0, 0]
         #N2 = [-d_N2/2, 0, 0]
-        
+
+    
         #Emit dimer AB
         if (batch_per_input > 1):
             pass
-        batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+        
+        if doCBS:
+            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+        else:
+            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
@@ -117,17 +142,25 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
 
         #Emit monomer A with ghost atoms(B)
         batch_file.write("$new_job\n")
-        batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+        if doCBS:
+            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+        else:
+            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
-     
+        
         batch_file.write("{}: {} {} {}\n".format(single_atom.atoms[0].name, SA[0], SA[1], SA[2]))
         batch_file.write("end\n\n")
 
         #Emit monomer B with ghost atoms(A)
         batch_file.write("$new_job\n")
-        batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+        if doCBS:
+            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+        else:
+            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{}: {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
@@ -156,8 +189,18 @@ def sample_tasks_N2_Ne_pes(N2dist):
 
     cb_linear_mol_vs_single_atom(N2_mol, Ne_mol, "./", 1)
 
+def sample_tasks_N2_Ar_pes_CBS(N2dist):
+    N2_mol = Molecule()
+    N2_mol.add_atom("N", [N2dist/2, 0, 0])
+    N2_mol.add_atom("N", [-N2dist/2, 0, 0])
+
+    Ar_mol = Molecule()
+    Ar_mol.add_atom("Ar", [0, 0, 0])
+
+    cb_linear_mol_vs_single_atom(N2_mol, Ar_mol, "./", 1, 1.7, 10,  50,  0e0, pi/2e0,  15,  True)
+
 def app_main():
-    sample_tasks_N2_Ne_pes(d_N2)
+    sample_tasks_N2_Ar_pes_CBS(d_N2)
     pass
 
 if __name__ == "__main__":

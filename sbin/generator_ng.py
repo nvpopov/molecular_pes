@@ -5,88 +5,7 @@ from enum import Enum
 import sys, os
 import itertools
 
-bohr2angs = 0.529177
-
-d_N2 = 1.099998  
-d_N2_SolidState = 1.06  
-
-DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX def2/J VERYTIGHTSCF  DIRECT PMODEL
-%maxcore 3000
-%pal nprocs 3 
-end"""
-
-CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF  DIRECT PMODEL
-%maxcore 5000
-%pal nprocs 9 
-end"""
-
-AUG_CCPVXZ_BASIS_NAMES = {
-    2 : "aug-cc-pVDZ",
-    3 : "aug-cc-pVTZ",
-    4 : "aug-cc-pVQZ",
-    5 : "aug-cc-pV5Z"
-}
-
-CCPVXZ_BASIS_NAMES = {
-    2 : "cc-pVDZ",
-    3 : "cc-pVTZ",
-    4 : "cc-pVQZ",
-    5 : "cc-pV5Z"
-}
-
-N2_Ar_DISTANCES_BOHR = [
-    4.75, 5.00, 5.25, 5.50, 5.75, 6.00, 
-    6.25, 6.50, 6.75, 7.00, 7.25, 7.50, 
-    7.75, 8.00, 8.25, 8.50, 8.75, 9.00,
-    9.25, 9.50, 9.75, 10.0, 11.0, 12.0,
-    14.0, 16.0, 18.0, 20.0, 25.0, 30.0
-]
-
-N2_Ar_DISTANCES = [r*bohr2angs for r in N2_Ar_DISTANCES_BOHR ]
-
-LEGENDRE_ROOTS_ANGLE_ARCCOS = [
-    2.963498195463516,
-    2.732792416247772,
-    2.500726327116406,
-    2.268356043649630,
-    2.035874587341303,
-    1.803344977489339,
-    1.570796326794897,
-    1.338247676100454,
-    1.105718066248490,
-    0.8732366099401631,
-    0.6408663264733868,
-    0.4088002373420213,
-    0.1780944581262768
-]
-
-LEGENDRE_ROOTS_ANGLE_WITH_ZERO = [
-    2.963498195463516,
-    2.732792416247772,
-    2.500726327116406,
-    2.268356043649630,
-    2.035874587341303,
-    1.803344977489339,
-    1.570796326794897,
-    1.338247676100454,
-    1.105718066248490,
-    0.8732366099401631,
-    0.6408663264733868,
-    0.4088002373420213,
-    0.1780944581262768,
-    0.0000000000000000
-]
-
-LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI = [
-    1.570796326794897,
-    1.338247676100454,
-    1.105718066248490,
-    0.8732366099401631,
-    0.6408663264733868,
-    0.4088002373420213,
-    0.1780944581262768,
-    0.0000000000000000
-]
+import aux_data
 
 class ModelType(Enum):
     UNKNOWN = 1
@@ -166,9 +85,9 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
             pass
         
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -199,9 +118,9 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         #Emit monomer A with ghost atoms(B)
         batch_file.write("$new_job\n")
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -213,9 +132,9 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
         #Emit monomer B with ghost atoms(A)
         batch_file.write("$new_job\n")
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -276,9 +195,9 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
             pass
         
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -309,9 +228,9 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
         #Emit monomer A with ghost atoms(B)
         batch_file.write("$new_job\n")
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -323,9 +242,9 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
         #Emit monomer B with ghost atoms(A)
         batch_file.write("$new_job\n")
         if doCBS:
-            batch_file.write("{}\n".format(CCSDT_CBS_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
         else:
-            batch_file.write("{}\n".format(DEFAULT_ORCA_HEADER))
+            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -374,15 +293,16 @@ def sample_tasks_N2_X_pes_cbs_mesh(N2dist, single_atom_name):
     X_mol.add_atom(single_atom_name, [0, 0, 0])
     #print(type(N2dist))
     #print(type(single_atom_name))
-    cb_linear_mol_vs_single_atom_mesh(N2_mol, X_mol, "./", 1, N2_Ar_DISTANCES, LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI, True)
+    cb_linear_mol_vs_single_atom_mesh(N2_mol, X_mol, "./", 1,
+        aux_data.N2_Ar_DISTANCES, aux_data.LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI, True)
 
 def debug_plot_normalized_angle_mesh(*args):
-    for elem in LEGENDRE_ROOTS_ANGLE_ARCCOS:
+    for elem in aux_data.LEGENDRE_ROOTS_ANGLE_ARCCOS:
         print("{0:.12f} {1:.12f}".format(elem, degrees(elem)))
     pass
 
 def debug_plot_normalized_angle_mesh_zero_hfpi(*args):
-    for elem in LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI:
+    for elem in aux_data.LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI:
         print("{0:.12f} {1:.12f}".format(elem, degrees(elem)))
     pass
 
@@ -398,8 +318,8 @@ def app_main():
 
     task_list = []
     task_list.append(["list", print_all_tasks, (task_list,), 0])
-    task_list.append(["n2_ar_pes_cbs", sample_tasks_N2_Ar_pes_cbs, (d_N2,), 0])
-    task_list.append(["n2_x_pes_cbs_mesh", sample_tasks_N2_X_pes_cbs_mesh, (d_N2,), 1])
+    task_list.append(["n2_ar_pes_cbs", sample_tasks_N2_Ar_pes_cbs, (aux_data.d_N2,), 0])
+    task_list.append(["n2_x_pes_cbs_mesh", sample_tasks_N2_X_pes_cbs_mesh, (aux_data.d_N2,), 1])
     task_list.append(["gm", debug_plot_normalized_angle_mesh, (), 0])
     task_list.append(["gm0hpi", debug_plot_normalized_angle_mesh_zero_hfpi, (), 0])
 

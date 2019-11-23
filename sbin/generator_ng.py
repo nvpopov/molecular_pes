@@ -4,7 +4,7 @@ from math import pi,sin,cos,sqrt,pow, degrees
 from enum import Enum
 import sys, os
 import itertools
-
+import pes_extract
 import aux_data
 
 class ModelType(Enum):
@@ -308,8 +308,14 @@ def debug_plot_normalized_angle_mesh_zero_hfpi(*args):
 
 def print_all_tasks(task_list):
     print("Avaiable tasks:")
+
     for task_idx, task in enumerate(task_list):
         print("{}){}".format(task_idx, task[0]))
+
+def pes_extract_a(batch_dir, output_filename):
+    print("pes_extract called -> batch_dir={}, output_filename={}".format(batch_dir, output_filename))
+    pes_extract.pes_extract_a(batch_dir, output_filename)
+    pass
 
 def app_main():
 
@@ -317,12 +323,12 @@ def app_main():
     print("pos_args = {}".format(pos_args))
 
     task_list = []
-    task_list.append(["list", print_all_tasks, (task_list,), 0])
+    task_list.append(["list", print_all_tasks, (task_list), 0])
     task_list.append(["n2_ar_pes_cbs", sample_tasks_N2_Ar_pes_cbs, (aux_data.d_N2,), 0])
     task_list.append(["n2_x_pes_cbs_mesh", sample_tasks_N2_X_pes_cbs_mesh, (aux_data.d_N2,), 1])
     task_list.append(["gm", debug_plot_normalized_angle_mesh, (), 0])
     task_list.append(["gm0hpi", debug_plot_normalized_angle_mesh_zero_hfpi, (), 0])
-
+    task_list.append(["pes_extract_a", pes_extract_a, (), 2])
     task = task_list[0][0]
 
     if (len(sys.argv) != 1):

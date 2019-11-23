@@ -1,4 +1,5 @@
 bohr2angs = 0.529177
+ha2cminv = 220000.00000000003
 
 d_N2 = 1.099998  
 d_N2_SolidState = 1.06  
@@ -8,14 +9,14 @@ DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX 
 %pal nprocs 3 
 end"""
 
-CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(3/4,aug-cc) VERYTIGHTSCF  DIRECT PMODEL AutoAux
-%maxcore 3000
-%pal nprocs 8 
+CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF PMODEL
+%maxcore 19000
+%pal nprocs 4 
 end"""
 
-CCSDT_CBS_RI_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF  DIRECT PMODEL AutoAux
-%maxcore 3000
-%pal nprocs 8 
+CCSDT_CBS_RI_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF PMODEL
+%maxcore 19000
+%pal nprocs 4 
 end"""
 
 AUG_CCPVXZ_BASIS_NAMES = {

@@ -10,9 +10,9 @@ import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
-def pes_extract_a(batch_dir, output_filename):
+def pes_extract_a(batch_dir_inp, output_filename):
     
-    task_list = os.listdir(batch_dir)
+    task_list = os.listdir(batch_dir_inp)
     print("Total steps = {}".format(task_list.__len__()))
 
     out_data = []
@@ -23,7 +23,7 @@ def pes_extract_a(batch_dir, output_filename):
         #print ("{} {}".format(task_id, task))
         task_data = {}
 
-        batch_dir = "batch/{}".format(task)
+        batch_dir = "{}/{}".format(batch_dir_inp, task)
         #open DATA file
         data_file = open("{}/DATA".format(batch_dir), "r")
         data_file_lines = data_file.readlines()[0].split()
@@ -113,5 +113,16 @@ def pes_extract_a(batch_dir, output_filename):
     for elem in out_data_sorted:
         output_data.write("{},{},{},{},{},{}\n".format(elem["r"], elem["theta"], elem["E_FINAL"],
         elem["DIPOLE_MOMENT_MDCI"][0], elem["DIPOLE_MOMENT_MDCI"][1], elem["DIPOLE_MOMENT_MDCI"][2]))
+
+    #generate data for plots
+    for t_i in range(0, len(theta_domain_s)):
+
+        cur_r = open("r{}.data".format(t_i), "w")
+        
+        data_per_theta = [elem for elem in out_data_sorted if elem["theta"] == theta_domain_s[t_i]]
+
+        for elem2 in data_per_theta:
+            cur_r.write("{},{}\n".format(elem2["r"], elem2["E_FINAL"]))
+   
 
     pass

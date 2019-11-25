@@ -1,0 +1,1 @@
+## Note on CCSD(T) - aug-cc-pv{4,5}z - BSSE+CBS

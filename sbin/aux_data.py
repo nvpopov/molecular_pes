@@ -9,6 +9,12 @@ DEFAULT_ORCA_HEADER = """! RHF  DLPNO-CCSD(T) aug-cc-pVQZ aug-cc-pVQZ/C RIJCOSX 
 %pal nprocs 3 
 end"""
 
+DLPNO_CCSDT_CBS_ORCH_HEADER = """! RHF DLPNO-CCSD(T) Extrapolate(4/5,aug-cc) aug-cc-pVQZ/C RIJCOSX def2/J VERYTIGHTSCF PMODEL
+%maxcore 3000
+%pal nprocs 4 
+end
+"""
+
 CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF PMODEL
 %maxcore 19000
 %pal nprocs 4 

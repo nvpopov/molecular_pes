@@ -144,8 +144,8 @@ def cb_linear_mol_vs_single_atom(linear_molecule, single_atom, outdir, batch_per
 
     pass
 
-def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batch_per_input,
-                                      r_mesh, angle_mesh, doCBS ):
+def cb_linear_mol_vs_single_atom_mesh(orca_header, linear_molecule, single_atom, outdir, batch_per_input,
+                                      r_mesh, angle_mesh):
 
     #compose tasks root directory
 
@@ -194,11 +194,8 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
         if (batch_per_input > 1):
             pass
         
-        if doCBS:
-            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
-        else:
-            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
-
+        batch_file.write("{}\n".format(orca_header))
+       
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
             batch_file.write("{} {} {} {}\n".format(atom.name, atom.coord[0], atom.coord[1], atom.coord[2]))
@@ -227,10 +224,7 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
 
         #Emit monomer A with ghost atoms(B)
         batch_file.write("$new_job\n")
-        if doCBS:
-            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
-        else:
-            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
+        batch_file.write("{}\n".format(orca_header))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -241,10 +235,7 @@ def cb_linear_mol_vs_single_atom_mesh(linear_molecule, single_atom, outdir, batc
 
         #Emit monomer B with ghost atoms(A)
         batch_file.write("$new_job\n")
-        if doCBS:
-            batch_file.write("{}\n".format(aux_data.CCSDT_CBS_ORCA_HEADER))
-        else:
-            batch_file.write("{}\n".format(aux_data.DEFAULT_ORCA_HEADER))
+        batch_file.write("{}\n".format(orca_header))
 
         batch_file.write("* xyz 0 1\n")
         for atom in linear_molecule.atoms:
@@ -293,8 +284,22 @@ def sample_tasks_N2_X_pes_cbs_mesh(N2dist, single_atom_name):
     X_mol.add_atom(single_atom_name, [0, 0, 0])
     #print(type(N2dist))
     #print(type(single_atom_name))
-    cb_linear_mol_vs_single_atom_mesh(N2_mol, X_mol, "./", 1,
-        aux_data.N2_Ar_DISTANCES, aux_data.LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI, True)
+    cb_linear_mol_vs_single_atom_mesh(aux_data.CCSDT_CBS_ORCA_HEADER, N2_mol, X_mol, "./", 1,
+        aux_data.N2_Ar_DISTANCES, aux_data.LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI)
+
+
+def sample_tasks_N2_X_pes_cbs_mesh_dlpno(N2dist, single_atom_name):
+    N2_mol = Molecule()
+    N2_mol.add_atom("N", [N2dist/2, 0, 0])
+    N2_mol.add_atom("N", [-N2dist/2, 0, 0])
+
+    X_mol = Molecule()
+    X_mol.add_atom(single_atom_name, [0, 0, 0])
+    #print(type(N2dist))
+    #print(type(single_atom_name))
+    cb_linear_mol_vs_single_atom_mesh(aux_data.DLPNO_CCSDT_CBS_ORCH_HEADER, N2_mol, X_mol, "./", 1,
+        aux_data.N2_Ar_DISTANCES, aux_data.LEGENDRE_ROOTS_ANGLE_WITH_0_HALFPI)
+
 
 def debug_plot_normalized_angle_mesh(*args):
     for elem in aux_data.LEGENDRE_ROOTS_ANGLE_ARCCOS:
@@ -326,6 +331,7 @@ def app_main():
     task_list.append(["list", print_all_tasks, (task_list), 0])
     task_list.append(["n2_ar_pes_cbs", sample_tasks_N2_Ar_pes_cbs, (aux_data.d_N2,), 0])
     task_list.append(["n2_x_pes_cbs_mesh", sample_tasks_N2_X_pes_cbs_mesh, (aux_data.d_N2,), 1])
+    task_list.append(["n2_x_pes_cbs_mesh_dlpno", sample_tasks_N2_X_pes_cbs_mesh_dlpno, (aux_data.d_N2,), 1])
     task_list.append(["gm", debug_plot_normalized_angle_mesh, (), 0])
     task_list.append(["gm0hpi", debug_plot_normalized_angle_mesh_zero_hfpi, (), 0])
     task_list.append(["pes_extract_a", pes_extract_a, (), 2])

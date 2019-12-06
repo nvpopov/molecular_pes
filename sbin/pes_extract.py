@@ -126,3 +126,117 @@ def pes_extract_a(batch_dir_inp, output_filename):
    
 
     pass
+
+def pes_extract_generic(batch_dir_inp, output_filename):
+    
+    task_list = os.listdir(batch_dir_inp)
+    print("Total steps = {}".format(task_list.__len__()))
+
+    out_data = []
+    r_domain = []
+    theta_domain = []
+
+    for task_id, task in enumerate(task_list):
+        #print ("{} {}".format(task_id, task))
+        task_data = {}
+
+        batch_dir = "{}/{}".format(batch_dir_inp, task)
+        #open DATA file
+        data_file = open("{}/DATA".format(batch_dir), "r")
+        data_file_lines = data_file.readlines()[0].split()
+        task_r = float(data_file_lines[0])
+        task_theta = float(data_file_lines[1])
+
+        outfile = open("{}/orca.out".format(batch_dir), "r")
+
+        e_hf = []
+        e_mdci = []
+        dipole_moments = []
+
+        for out_line in outfile.readlines():
+            if "Total Energy       :" in out_line:
+                e_hf.append(float(out_line.split()[3]))    
+                pass
+        
+            if "E(CCSD(T))" in out_line:
+                e_mdci.append(float(out_line.split()[2]))    
+                pass
+            
+            if "Total Dipole Moment" in out_line:
+                lsp = out_line.split()
+                dipole_moments.append([float(lsp[4]), float(lsp[5]), float(lsp[6])])
+
+        task_data["r"] = task_r
+        task_data["theta"] = task_theta
+        task_data["E_AB_HF"] = e_hf[0]
+        task_data["E_AG_HF"] = e_hf[1]
+        task_data["E_GB_HF"] = e_hf[2] 
+        task_data["E_HF_INT"] = e_hf[0] - e_hf[1] - e_hf[2]
+        task_data["E_AB_CCSDT"] = e_mdci[0]  
+        task_data["E_AG_CCSDT"] = e_mdci[1]
+        task_data["E_GB_CCSDT"] = e_mdci[2]
+        task_data["E_CCSDT_INT"] = aux_data.ha2cminv*(e_mdci[0] - e_mdci[1] - e_mdci[2])
+        task_data["DIPOLE_MOMENT_HF"] = dipole_moments[0]
+        task_data["DIPOLE_MOMENT_MDCI"] = dipole_moments[1]
+
+        out_data.append(task_data)
+        
+        out_data_sorted = sorted(out_data, key = lambda i: (i['theta'], i['r'])) 
+        r_domain_s = sorted(r_domain)
+        theta_domain_s = sorted(theta_domain)
+
+        #compact version
+        output_data = open("{}_compact.pes".format(output_filename), "w")
+        output_data.write("r_angs,theta_rad,e_final_cminv,dm_x_au,dm_y_au,dm_z_au\n")
+        for elem in out_data_sorted:
+            output_data.write("{:.8f},{:.8f},{},{},{},{}\n".format(elem["r"], elem["theta"], elem["E_CCSDT_INT"],
+            elem["DIPOLE_MOMENT_MDCI"][0], elem["DIPOLE_MOMENT_MDCI"][1], elem["DIPOLE_MOMENT_MDCI"][2]))
+
+        #detail version
+        output_data_detail = open("{}_detail.pes".format(output_filename), "w")
+        # """
+        # r_angs 0 
+        # theta_rad 1
+        # e_final_cminv 2
+        # e_ab_hf 3 
+        # e_ag_hf 4 
+        # e_gb_hf 5 
+        # e_hf_int 6
+        # e_ab_ccsdt 7 
+        # e_ag_ccsdt 8 
+        # e_gb_ccsdt 9 
+        # e_ccsdt_int 10
+        # dm_hf_x_au 11 
+        # dm_hf_y_au 12 
+        # dm_hf_z_au 13
+        # dm_ccsdt_x_au 14 
+        # dm_ccsdt_y_au 15 
+        # dm_ccsdt_z_au 16
+        # """
+        output_data_detail.write(
+            "r_angs,theta_rad,e_final_cminv,e_ab_hf,e_ag_hf,e_gb_hf,e_hf_int,e_ab_ccsdt,e_ag_ccsdt,e_gb_ccsdt,e_ccsdt_int,dm_x_au,dm_y_au,dm_z_au\n"
+            )
+        for elem in out_data_sorted:
+            #                           0      1    2  3  4  5  6  7  8  9  10 11 12 13 14 15 16
+            output_data_detail.write("{:.8f},{:.8f},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
+                elem["r"], 
+                elem["theta"], 
+                elem["E_CCSDT_INT"],
+                elem["E_AB_HF"],
+                elem["E_AG_HF"],
+                elem["E_GB_HF"],
+                elem["E_AB_HF"] - elem["E_AG_HF"] - elem["E_GB_HF"],
+                elem["E_AB_CCSDT"],
+                elem["E_AG_CCSDT"],
+                elem["E_GB_CCSDT"],
+                elem["E_AB_CCSDT"] - elem["E_AG_CCSDT"] - elem["E_GB_CCSDT"],
+                elem["DIPOLE_MOMENT_HF"][0], 
+                elem["DIPOLE_MOMENT_HF"][1], 
+                elem["DIPOLE_MOMENT_HF"][2],
+                elem["DIPOLE_MOMENT_MDCI"][0], 
+                elem["DIPOLE_MOMENT_MDCI"][1], 
+                elem["DIPOLE_MOMENT_MDCI"][2])
+                )
+
+    pass
+    

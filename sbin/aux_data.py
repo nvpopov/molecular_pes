@@ -20,6 +20,16 @@ CCSDT_CBS_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF PM
 %pal nprocs 4 
 end"""
 
+CCSDT_CBS_ORCA_HEADER_TZP = """! RHF CCSD(T) aug-cc-pVTZ VERYTIGHTSCF PMODEL
+%maxcore 3000
+%pal nprocs 4 
+end"""
+
+CCSDT_CBS_ORCA_HEADER_QZP = """! RHF CCSD(T) aug-cc-pVQZ VERYTIGHTSCF PMODEL
+%maxcore 3000
+%pal nprocs 4 
+end"""
+
 CCSDT_CBS_RI_ORCA_HEADER = """! RHF CCSD(T) Extrapolate(4/5,aug-cc) VERYTIGHTSCF PMODEL
 %maxcore 19000
 %pal nprocs 4 

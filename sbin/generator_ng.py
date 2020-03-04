@@ -6,6 +6,7 @@ import sys, os
 import itertools
 import pes_extract
 import aux_data
+import pes_analyze
 
 class ModelType(Enum):
     UNKNOWN = 1
@@ -353,6 +354,10 @@ def pes_extract_a(batch_dir, output_filename):
 def task_pes_extract_generic(batch_dir, output_filename):
     print("pes_extract_generic called -> batch_dir={}, output_filename={}".format(batch_dir, output_filename))
     pes_extract.pes_extract_generic(batch_dir, output_filename)
+    pass
+
+def task_conv_2var(filename):
+    pes_analyze.check_convergence_2var(filename)
     pass
 
 def app_main():

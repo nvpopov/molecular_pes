@@ -18,6 +18,7 @@ def pes_extract_a(batch_dir_inp, output_filename):
     out_data = []
     r_domain = []
     theta_domain = []
+    out_data_sorted = []
 
     for task_id, task in enumerate(task_list):
         #print ("{} {}".format(task_id, task))
@@ -116,14 +117,23 @@ def pes_extract_a(batch_dir_inp, output_filename):
 
     #generate data for plots
     for t_i in range(0, len(theta_domain_s)):
-
         cur_r = open("r{}.data".format(t_i), "w")
-        
         data_per_theta = [elem for elem in out_data_sorted if elem["theta"] == theta_domain_s[t_i]]
-
         for elem2 in data_per_theta:
             cur_r.write("{},{}\n".format(elem2["r"], elem2["E_FINAL"]))
    
+    #perform convergence check at long range
+    start_dist_check = 3.4 #Angstrom
+    
+    for theta_subspace_elem in theta_domain_s:
+        elem_data = []
+        #build data for current theta
+        for elem in out_data_sorted:
+            if (elem['theta']-theta_subspace_elem < 0.001) and (elem['r'] > start_dist_check):
+                elem_data.append([elem['theta'], elem['r'], elem["E_FINAL"]])
+                pass
+        print(elem_data)            
+
 
     pass
 
@@ -135,6 +145,7 @@ def pes_extract_generic(batch_dir_inp, output_filename):
     out_data = []
     r_domain = []
     theta_domain = []
+    out_data_sorted = []
 
     for task_id, task in enumerate(task_list):
         #print ("{} {}".format(task_id, task))
@@ -214,8 +225,11 @@ def pes_extract_generic(batch_dir_inp, output_filename):
         # dm_ccsdt_z_au 16
         # """
         output_data_detail.write(
-            "r_angs,theta_rad,e_final_cminv,e_ab_hf,e_ag_hf,e_gb_hf,e_hf_int,e_ab_ccsdt,e_ag_ccsdt,e_gb_ccsdt,e_ccsdt_int,dm_x_au,dm_y_au,dm_z_au\n"
+            "r_angs,theta_rad,e_final_cminv,e_ab_hf,e_ag_hf,e_gb_hf,e_hf_int,e_ab_ccsdt,e_ag_ccsdt,e_gb_ccsdt,e_ccsdt_int,"
             )
+        output_data_detail.write(
+            "dm_hf_x_au,dm_hf_y_au,dm_hf_z_au,dm_x_au,dm_y_au,dm_z_au\n"
+            )    
         for elem in out_data_sorted:
             #                           0      1    2  3  4  5  6  7  8  9  10 11 12 13 14 15 16
             output_data_detail.write("{:.8f},{:.8f},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
@@ -237,6 +251,9 @@ def pes_extract_generic(batch_dir_inp, output_filename):
                 elem["DIPOLE_MOMENT_MDCI"][1], 
                 elem["DIPOLE_MOMENT_MDCI"][2])
                 )
+        
+        
+    #perform convergence check
 
     pass
     
